@@ -1,0 +1,58 @@
+name: App Pipeline
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js Frontend
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: ".nvmrc"
+                  cache: "npm"
+                  cache-dependency-path: frontend/package-lock.json
+
+            - name: Build Frontend
+              run: |
+                  cd frontend
+                  npm ci --prefer-offline
+                  npm run build
+
+            - name: Setup Node.js CDK
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: ".nvmrc"
+                  cache: "npm"
+                  cache-dependency-path: infra/package-lock.json
+
+            - name: CDK Setup
+              run: |
+                  cd infra
+                  npm ci --prefer-offline
+
+            - name: CDK Synth
+              run: |
+                  cd infra
+                  npm run cdk synth -- -o dist
+
+            - name: Upload CDK Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: cdk-dist
+                  path: infra/dist
+
+            - name: Upload Frontend Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: frontend-dist
+                  path: frontend/dist
+
+    # deploy:
