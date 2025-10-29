@@ -7,6 +7,9 @@ on:
         branches: [main]
 
 jobs:
+    # ----------------------------------------------
+    # 1. BUILD JOB
+    # ----------------------------------------------
     build:
         runs-on: ubuntu-latest
         steps:
@@ -54,5 +57,42 @@ jobs:
               with:
                   name: frontend-dist
                   path: frontend/dist
+    # ----------------------------------------------
+    # 2. DEPLOY JOB
+    # ----------------------------------------------
+    deploy:
+        runs-on: ubuntu-latest
+        needs: build
+        # Deploy only on pushes to main branch
+        if: github.ref == 'refs/heads/main'
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
 
-    # deploy:
+            - name: Setup Node.js CDK
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: ".nvmrc"
+
+            - name: Download Artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  path: .
+
+            # Needed for AWS CDK CLI
+            - name: CDK Setup
+              run: |
+                  cd infra
+                  npm ci --prefer-offline
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Deploy the app
+              run: |
+                  cd infra
+                  npm run cdk deploy -- --app dist --require-approval never
