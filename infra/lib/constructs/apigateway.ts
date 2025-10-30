@@ -1,5 +1,6 @@
 import { Duration } from 'aws-cdk-lib';
 import { CorsHttpMethod, HttpApi, HttpMethod, HttpStage } from 'aws-cdk-lib/aws-apigatewayv2';
+import { HttpJwtAuthorizer } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { Function } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
@@ -12,11 +13,18 @@ type ApiGatewayLayerProps = {
   updateNoteFunction: Function;
 };
 
+const JWT_ISSUER = 'https://welcome-bonefish-2.clerk.accounts.dev';
+const JWT_AUD = 'note-sync-api';
+
 export class ApiGatewayLayer extends Construct {
   public readonly httpApiUrl: string;
 
   constructor(scope: Construct, id: string, props: ApiGatewayLayerProps) {
     super(scope, id);
+
+    const clerkAuthorizer = new HttpJwtAuthorizer('ClerkJWTAuthorizer', JWT_ISSUER, {
+      jwtAudience: [JWT_AUD],
+    });
 
     const httpApi = new HttpApi(this, 'NoteSyncHttpApi', {
       corsPreflight: {
@@ -25,6 +33,7 @@ export class ApiGatewayLayer extends Construct {
         allowOrigins: ['*'],
         maxAge: Duration.days(1),
       },
+      defaultAuthorizer: clerkAuthorizer,
     });
 
     const routes = [

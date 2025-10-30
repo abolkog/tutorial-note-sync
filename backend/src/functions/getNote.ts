@@ -1,6 +1,6 @@
-import { APIGatewayProxyEventV2, APIGatewayProxyHandlerV2 } from 'aws-lambda';
+import { HandlerType, lambdaWrapper } from '../utils/lambdaWrapper';
 
-export const handler: APIGatewayProxyHandlerV2 = async (event) => {
+const getNoteFunction: HandlerType = async (event, userId) => {
   console.log({ event });
   const noteId = event.pathParameters?.noteId;
 
@@ -9,3 +9,4 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     body: JSON.stringify({ message: 'hello from Get Note', noteId }),
   };
 };
+export const handler = lambdaWrapper(getNoteFunction);

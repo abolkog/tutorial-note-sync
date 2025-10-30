@@ -3,7 +3,7 @@ import { Construct } from 'constructs';
 import path from 'path';
 
 const NODE_RUNTIME = Runtime.NODEJS_22_X;
-const functionPath = path.join(__dirname, '..', '..', '..', 'backend', 'dist', 'functions');
+const functionPath = path.join(__dirname, '..', '..', '..', 'backend', 'dist');
 const CODE = Code.fromAsset(functionPath);
 
 export class LambdaLayer extends Construct {
@@ -19,31 +19,31 @@ export class LambdaLayer extends Construct {
     this.createNoteFunction = new Function(this, 'CreateNoteFunction', {
       runtime: NODE_RUNTIME,
       code: CODE,
-      handler: 'createNote.handler',
+      handler: 'functions/createNote.handler',
     });
 
     this.getNotesFunction = new Function(this, 'GetNotesFunction', {
       runtime: NODE_RUNTIME,
       code: CODE,
-      handler: 'getNotes.handler',
+      handler: 'functions/getNotes.handler',
     });
 
     this.getNoteFunction = new Function(this, 'GetNoteFunction', {
       runtime: NODE_RUNTIME,
       code: CODE,
-      handler: 'getNote.handler',
+      handler: 'functions/getNote.handler',
     });
 
     this.updateNoteFunction = new Function(this, 'UpdateNoteFunction', {
       runtime: NODE_RUNTIME,
       code: CODE,
-      handler: 'updateNote.handler',
+      handler: 'functions/updateNote.handler',
     });
 
     this.deleteNoteFunction = new Function(this, 'DeleteNoteFunction', {
       runtime: NODE_RUNTIME,
       code: CODE,
-      handler: 'deleteNote.handler',
+      handler: 'functions/deleteNote.handler',
     });
   }
 }
