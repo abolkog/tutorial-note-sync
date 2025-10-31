@@ -23,7 +23,7 @@ export class InfraStack extends cdk.Stack {
     // HTTP API Gateway Layer
     const apiLayer = new ApiGatewayLayer(this, 'ApiGatewayLayer', {
       createNoteFunction: lambdaLayer.createNoteFunction,
-      getNotesFunction: lambdaLayer.getNotesFunction,
+      getNotesFunction: lambdaLayer.getAllNotesFunction,
       getNoteFunction: lambdaLayer.getNoteFunction,
       updateNoteFunction: lambdaLayer.updateNoteFunction,
       deleteNoteFunction: lambdaLayer.deleteNoteFunction,

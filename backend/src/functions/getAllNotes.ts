@@ -1,6 +1,6 @@
 import { HandlerType, lambdaWrapper } from '../utils/lambdaWrapper';
 
-const getNotesFunction: HandlerType = async (event, userId) => {
+const getAllNotesFunction: HandlerType = async (event, userId) => {
   console.log({ event });
 
   return {
@@ -9,4 +9,4 @@ const getNotesFunction: HandlerType = async (event, userId) => {
   };
 };
 
-export const handler = lambdaWrapper(getNotesFunction);
+export const handler = lambdaWrapper(getAllNotesFunction);

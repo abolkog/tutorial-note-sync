@@ -1,64 +1,50 @@
 import { Table } from 'aws-cdk-lib/aws-dynamodb';
-import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
-import path from 'path';
-
-const NODE_RUNTIME = Runtime.NODEJS_22_X;
-const functionPath = path.join(__dirname, '..', '..', '..', 'backend', 'dist');
-const CODE = Code.fromAsset(functionPath);
+import { BaseLambda } from './baseLambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 
 type LambdaLayerProps = {
   notesTable: Table;
 };
 
 export class LambdaLayer extends Construct {
-  public readonly createNoteFunction: Function;
-  public readonly getNotesFunction: Function;
-  public readonly getNoteFunction: Function;
-  public readonly updateNoteFunction: Function;
-  public readonly deleteNoteFunction: Function;
+  public readonly createNoteFunction: NodejsFunction;
+  public readonly getAllNotesFunction: NodejsFunction;
+  public readonly getNoteFunction: NodejsFunction;
+  public readonly updateNoteFunction: NodejsFunction;
+  public readonly deleteNoteFunction: NodejsFunction;
 
   constructor(scope: Construct, id: string, props: LambdaLayerProps) {
     super(scope, id);
 
     const environment = { NOTES_TABLE_NAME: props.notesTable.tableName };
 
-    this.createNoteFunction = new Function(this, 'CreateNoteFunction', {
-      runtime: NODE_RUNTIME,
-      code: CODE,
-      handler: 'functions/createNote.handler',
+    this.createNoteFunction = new BaseLambda(this, 'CreateNoteFunction', {
+      entry: 'createNote.ts',
       environment,
     });
     props.notesTable.grantWriteData(this.createNoteFunction);
 
-    this.getNotesFunction = new Function(this, 'GetNotesFunction', {
-      runtime: NODE_RUNTIME,
-      code: CODE,
-      handler: 'functions/getNotes.handler',
+    this.getAllNotesFunction = new BaseLambda(this, 'GetAllNotesFunction', {
+      entry: 'getAllNotes.ts',
       environment,
     });
-    props.notesTable.grantReadData(this.getNotesFunction);
+    props.notesTable.grantReadData(this.getAllNotesFunction);
 
-    this.getNoteFunction = new Function(this, 'GetNoteFunction', {
-      runtime: NODE_RUNTIME,
-      code: CODE,
-      handler: 'functions/getNote.handler',
+    this.getNoteFunction = new BaseLambda(this, 'GetNoteFunction', {
+      entry: 'getNote.ts',
       environment,
     });
-    props.notesTable.grantReadData(this.getNotesFunction);
+    props.notesTable.grantReadData(this.getAllNotesFunction);
 
-    this.updateNoteFunction = new Function(this, 'UpdateNoteFunction', {
-      runtime: NODE_RUNTIME,
-      code: CODE,
-      handler: 'functions/updateNote.handler',
+    this.updateNoteFunction = new BaseLambda(this, 'UpdateNoteFunction', {
+      entry: 'updateNote.ts',
       environment,
     });
     props.notesTable.grantReadWriteData(this.updateNoteFunction);
 
-    this.deleteNoteFunction = new Function(this, 'DeleteNoteFunction', {
-      runtime: NODE_RUNTIME,
-      code: CODE,
-      handler: 'functions/deleteNote.handler',
+    this.deleteNoteFunction = new BaseLambda(this, 'DeleteNoteFunction', {
+      entry: 'deleteNote.ts',
       environment,
     });
     props.notesTable.grantFullAccess(this.updateNoteFunction);

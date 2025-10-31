@@ -1,32 +1,38 @@
 import { HandlerType, lambdaWrapper } from '../utils/lambdaWrapper';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
-
-const client = new DynamoDBClient({ region: 'ap-southeast-2' });
-const docClient = DynamoDBDocumentClient.from(client);
+import { PutCommand } from '@aws-sdk/lib-dynamodb';
+import { Note, noteSchema } from '../schema/note';
+import { ZodError } from 'zod';
+import { dynamodb } from '../utils/dynamo';
+import { apiResponse } from '../utils/response';
 
 const createNotesFunction: HandlerType = async (event, userId) => {
-  const body = event.body ? JSON.parse(event.body) : {};
+  try {
+    const body = event.body ? JSON.parse(event.body) : {};
+    const data = noteSchema.parse(body);
 
-  const noteId = `${Date.now()}#note${Math.random().toString(36).slice(2, 8)}`;
+    const noteId = `${Date.now()}#note${Math.random().toString(36).slice(2, 8)}`;
 
-  const note = {
-    userId,
-    noteId,
-    ...body,
-  };
+    const note: Note = {
+      ...data,
+      userId,
+      noteId,
+      createdAt: new Date().toISOString(),
+    };
 
-  await docClient.send(
-    new PutCommand({
-      TableName: process.env.NOTES_TABLE_NAME,
-      Item: note,
-    })
-  );
+    await dynamodb.send(
+      new PutCommand({
+        TableName: process.env.NOTES_TABLE_NAME,
+        Item: note,
+      })
+    );
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: 'Note Created', note }),
-  };
+    return apiResponse.ok({ message: 'Note Created', note });
+  } catch (e) {
+    if (e instanceof ZodError) {
+      return apiResponse.badRequest({ message: 'Error creating note', error: e });
+    }
+    throw e;
+  }
 };
 
 export const handler = lambdaWrapper(createNotesFunction);
