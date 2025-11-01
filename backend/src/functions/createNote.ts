@@ -10,7 +10,7 @@ const createNotesFunction: HandlerType = async (event, userId) => {
     const body = event.body ? JSON.parse(event.body) : {};
     const data = noteSchema.parse(body);
 
-    const noteId = `${Date.now()}#note${Math.random().toString(36).slice(2, 8)}`;
+    const noteId = `${Date.now()}_note_${Math.random().toString(36).slice(2, 8)}`;
 
     const note: Note = {
       ...data,
@@ -26,7 +26,7 @@ const createNotesFunction: HandlerType = async (event, userId) => {
       })
     );
 
-    return apiResponse.ok({ message: 'Note Created', note });
+    return apiResponse.created({ message: 'Note Created', note });
   } catch (e) {
     if (e instanceof ZodError) {
       return apiResponse.badRequest({ message: 'Error creating note', error: e });

@@ -35,7 +35,7 @@ export class LambdaLayer extends Construct {
       entry: 'getNote.ts',
       environment,
     });
-    props.notesTable.grantReadData(this.getAllNotesFunction);
+    props.notesTable.grantReadData(this.getNoteFunction);
 
     this.updateNoteFunction = new BaseLambda(this, 'UpdateNoteFunction', {
       entry: 'updateNote.ts',
@@ -47,6 +47,6 @@ export class LambdaLayer extends Construct {
       entry: 'deleteNote.ts',
       environment,
     });
-    props.notesTable.grantFullAccess(this.updateNoteFunction);
+    props.notesTable.grantReadWriteData(this.deleteNoteFunction);
   }
 }
