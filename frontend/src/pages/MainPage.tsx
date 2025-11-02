@@ -1,20 +1,15 @@
 import { AppSidebar } from '@/components/app-sidebar';
-import { Button } from '@/components/ui/button';
+import { MainPageSkeleton } from '@/components/pages/MainPageSkeleton';
+
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { useAuth } from '@clerk/react-router';
-import { useState } from 'react';
+import { useAppData } from '@/hooks/useAppData';
 
 export default function MainPage() {
-  const { getToken } = useAuth();
-  const [token, setToken] = useState('');
+  const { isLoading } = useAppData();
 
-  async function handleClick() {
-    const value = await getToken();
-    if (!value) return;
-
-    setToken(value);
+  if (isLoading) {
+    return <MainPageSkeleton />;
   }
-
   return (
     <SidebarProvider
       style={
@@ -29,8 +24,6 @@ export default function MainPage() {
           <SidebarTrigger className="-ml-1" />
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
-          <Button onClick={handleClick}>Get Token</Button>
-          <pre>{token}</pre>
           {Array.from({ length: 24 }).map((_, index) => (
             <div key={index} className="bg-muted/50 aspect-video h-12 w-full rounded-lg" />
           ))}

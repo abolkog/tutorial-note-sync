@@ -4,12 +4,15 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { RedirectToSignIn, SignedIn, SignedOut } from '@clerk/react-router';
+import { DataProvider } from './context/DataProvider';
 
 function ProtectedMainPage() {
   return (
     <>
       <SignedIn>
-        <MainPage />
+        <DataProvider>
+          <MainPage />
+        </DataProvider>
       </SignedIn>
       <SignedOut>
         <RedirectToSignIn />
@@ -20,10 +23,10 @@ function ProtectedMainPage() {
 export default function App() {
   return (
     <Routes>
-      <Route path='/' element={<ProtectedMainPage />} />
-      <Route path='/login' element={<LoginPage />} />
-      <Route path='/signup' element={<RegisterPage />} />
-      <Route path='*' element={<NotFoundPage />} />
+      <Route path="/" element={<ProtectedMainPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<RegisterPage />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
