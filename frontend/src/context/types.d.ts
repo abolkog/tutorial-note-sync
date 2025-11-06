@@ -11,10 +11,15 @@ type AppData = {
   lastKey?: string;
 };
 
-type DataContextType = {
+type UseNotesApiResult = {
   isLoading: boolean;
   isLoadingMore: boolean;
   data: AppData | undefined;
   error: Error | null;
   loadMore: () => Promise<void>;
+};
+
+type DataContextType = UseNotesApiResult & {
+  activeNote: Note | undefined;
+  setActiveNote: React.Dispatch<React.SetStateAction<Note | undefined>>;
 };

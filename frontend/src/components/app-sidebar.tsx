@@ -18,7 +18,7 @@ import { useAppData } from '@/hooks/useAppData';
 import { Button } from './ui/button';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data, isLoadingMore, loadMore } = useAppData();
+  const { data, isLoadingMore, loadMore, setActiveNote } = useAppData();
 
   return (
     <Sidebar collapsible="icon" className="overflow-hidden *:data-[sidebar=sidebar]:flex-row" {...props}>
@@ -63,6 +63,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   href="#"
                   key={note.noteId}
                   className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveNote(note);
+                  }}
                 >
                   <div className="flex w-full items-center gap-2">
                     <span className="font-medium">{note.title}</span>{' '}
