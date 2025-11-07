@@ -2,13 +2,15 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ToolBar from './Toolbar';
 import { useAppData } from '@/hooks/useAppData';
-import { act, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Input } from '../ui/input';
 
 export default function Editor() {
   const [saving, setSaving] = useState(false);
-  const { activeNote } = useAppData();
+  const { activeNote, createNote, updateNote } = useAppData();
+
   const [noteTitle, setNoteTitle] = useState(activeNote?.title || '');
+
   const editor = useEditor({
     autofocus: true,
     extensions: [StarterKit],
@@ -26,6 +28,7 @@ export default function Editor() {
 
     if (!activeNote) {
       editor.commands.clearContent();
+      setNoteTitle('');
       return;
     }
 
@@ -37,22 +40,20 @@ export default function Editor() {
     setIsValid(Boolean(noteTitle.length && editor.getText().length));
   }, [noteTitle, editor]);
 
-  function handleSave() {
+  async function handleSave() {
     if (saving) return;
     setSaving(true);
 
-    try {
-      const title = noteTitle.trim();
-      const content = editor.getHTML();
+    const title = noteTitle.trim();
+    const content = editor.getHTML();
 
-      if (!activeNote || !activeNote.noteId) {
-        console.log('Creating new note', { title });
-      } else {
-        console.log('Updating  note', { title, id: activeNote.noteId });
-      }
-    } finally {
-      setSaving(false);
+    if (!activeNote || !activeNote.noteId) {
+      await createNote({ title, content });
+    } else {
+      await updateNote(activeNote.noteId, { title, content });
     }
+
+    setSaving(false);
   }
 
   return (

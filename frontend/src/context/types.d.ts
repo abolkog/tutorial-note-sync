@@ -11,15 +11,22 @@ type AppData = {
   lastKey?: string;
 };
 
+type NotePayload = {
+  title: string;
+  content: string;
+};
+
 type UseNotesApiResult = {
   isLoading: boolean;
   isLoadingMore: boolean;
   data: AppData | undefined;
   error: Error | null;
   loadMore: () => Promise<void>;
-};
-
-type DataContextType = UseNotesApiResult & {
+  createNote: (payload: NotePayload) => Promise<void>;
+  updateNote: (noteId: string, payload: NotePayload) => Promise<void>;
+  deleteNote: (noteId: string) => Promise<void>;
   activeNote: Note | undefined;
   setActiveNote: React.Dispatch<React.SetStateAction<Note | undefined>>;
 };
+
+type DataContextType = UseNotesApiResult & {};

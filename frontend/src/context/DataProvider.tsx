@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { DataContext } from './DataContext';
 import { useNotesApi } from '@/hooks/useNotesApi';
 
@@ -7,8 +7,18 @@ type DataProviderProps = {
 };
 
 export function DataProvider({ children }: DataProviderProps) {
-  const { isLoading, isLoadingMore, loadMore, data, error } = useNotesApi();
-  const [activeNote, setActiveNote] = useState<Note | undefined>(undefined);
+  const {
+    isLoading,
+    isLoadingMore,
+    loadMore,
+    createNote,
+    updateNote,
+    deleteNote,
+    data,
+    error,
+    activeNote,
+    setActiveNote,
+  } = useNotesApi();
 
   const value = useMemo<DataContextType>(
     () => ({
@@ -16,11 +26,14 @@ export function DataProvider({ children }: DataProviderProps) {
       data,
       error,
       loadMore,
+      createNote,
+      updateNote,
+      deleteNote,
       isLoadingMore,
       activeNote,
       setActiveNote,
     }),
-    [isLoading, data, error, loadMore, isLoadingMore, activeNote, setActiveNote]
+    [isLoading, data, error, loadMore, createNote, updateNote, deleteNote, isLoadingMore, activeNote, setActiveNote]
   );
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

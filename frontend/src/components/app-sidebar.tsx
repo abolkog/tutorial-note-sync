@@ -1,6 +1,4 @@
-'use client';
-
-import * as React from 'react';
+import { useState } from 'react';
 
 import {
   Sidebar,
@@ -16,10 +14,17 @@ import {
 import { UserButton } from '@clerk/react-router';
 import { useAppData } from '@/hooks/useAppData';
 import { Button } from './ui/button';
+import DeleteNoteConfirmation from './DeleteNoteConfirmation';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data, isLoadingMore, loadMore, setActiveNote } = useAppData();
+  const { data, isLoadingMore, loadMore, setActiveNote, deleteNote } = useAppData();
+  const [deleting, setDeleting] = useState(false);
 
+  async function handleDelete(noteId: string) {
+    setDeleting(true);
+    await deleteNote(noteId);
+    setDeleting(false);
+  }
   return (
     <Sidebar collapsible="icon" className="overflow-hidden *:data-[sidebar=sidebar]:flex-row" {...props}>
       {/* This is the first sidebar */}
@@ -68,16 +73,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     setActiveNote(note);
                   }}
                 >
-                  <div className="flex w-full items-center gap-2">
-                    <span className="font-medium">{note.title}</span>{' '}
-                    <span className="ml-auto text-xs">
-                      {new Date(note.createdAt).toLocaleDateString('en-UK', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </span>
+                  <div className="flex w-full items-center justify-between gap-2">
+                    <span className="font-medium">{note.title}</span>
+                    <DeleteNoteConfirmation disabled={deleting} onConfirm={() => handleDelete(note.noteId)} />
                   </div>
+                  <span className="text-xs text-gray-500 italic">
+                    {new Date(note.createdAt).toLocaleDateString('en-UK', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </span>
                   <span className="line-clamp-2 w-[260px] text-sm whitespace-break-spaces">
                     {note.content.length > 70 ? `${note.content.substring(0, 70)} ...` : note.content}
                   </span>

@@ -33,7 +33,51 @@ export function useApi() {
     };
   }
 
+  async function createNote(payload: NotePayload) {
+    const headers = await authHeaders();
+
+    const response = await fetch(baseUrl, {
+      headers,
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw new Error('Unable to create new note');
+
+    const result = await response.json();
+    return result.note;
+  }
+
+  async function updateNote(noteId: string, payload: NotePayload): Promise<Note> {
+    const headers = await authHeaders();
+
+    const response = await fetch(`${baseUrl}/${noteId}`, {
+      headers,
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw new Error('Unable to update the note');
+
+    const result = await response.json();
+    return result.note;
+  }
+
+  async function deleteNote(noteId: string): Promise<void> {
+    const headers = await authHeaders();
+
+    const response = await fetch(`${baseUrl}/${noteId}`, {
+      headers,
+      method: 'DELETE',
+    });
+
+    if (!response.ok) throw new Error('Unable to update the note');
+  }
+
   return {
     listNotes,
+    createNote,
+    updateNote,
+    deleteNote,
   };
 }
