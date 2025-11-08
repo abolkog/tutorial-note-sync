@@ -4,6 +4,7 @@ import { FrontEndLayer } from './constructs/frontend';
 import { LambdaLayer } from './constructs/lambda';
 import { ApiGatewayLayer } from './constructs/apigateway';
 import { DataLayer } from './constructs/datalayer';
+import { WebSocketLayer } from './constructs/websocket';
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -18,6 +19,14 @@ export class InfraStack extends cdk.Stack {
     // Lambdas Construct
     const lambdaLayer = new LambdaLayer(this, 'LambdaLayer', {
       notesTable: dataLayer.notesTable,
+      connectionsTable: dataLayer.connectionTable,
+    });
+
+    // WebSocket Api Layer
+    const wsLayer = new WebSocketLayer(this, 'websocketApiLayer', {
+      connectionFunction: lambdaLayer.connectionFunction,
+      registerFunction: lambdaLayer.registerFunction,
+      disConnectionFunction: lambdaLayer.disConnectionFunction,
     });
 
     // HTTP API Gateway Layer
@@ -36,6 +45,14 @@ export class InfraStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, 'ApiURL', {
       value: apiLayer.httpApiUrl,
+    });
+
+    new cdk.CfnOutput(this, 'wsURL', {
+      value: wsLayer.webSocketURL,
+    });
+
+    new cdk.CfnOutput(this, 'wsCallBackURL', {
+      value: wsLayer.callbackURL,
     });
   }
 }
