@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react';
 import { DataContext } from './DataContext';
 import { useNotesApi } from '@/hooks/useNotesApi';
+import { useNotesWebSocket } from '@/hooks/useNotesWebSocket';
 
 type DataProviderProps = {
   children: ReactNode;
@@ -19,6 +20,8 @@ export function DataProvider({ children }: DataProviderProps) {
     activeNote,
     setActiveNote,
   } = useNotesApi();
+
+  useNotesWebSocket();
 
   const value = useMemo<DataContextType>(
     () => ({
