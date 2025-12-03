@@ -3,6 +3,7 @@ import { HandlerType, lambdaWrapper } from '../utils/lambdaWrapper';
 import { apiResponse } from '../utils/response';
 import { dynamodb } from '../utils/dynamo';
 import { noteSchema } from '../schema/note';
+import { publishWSNoteNotifications } from '../utils/ws';
 
 const updateNoteFunction: HandlerType = async (event, userId) => {
   const noteId = event.pathParameters?.noteId;
@@ -31,6 +32,10 @@ const updateNoteFunction: HandlerType = async (event, userId) => {
   });
 
   const result = await dynamodb.send(updateCommand);
+
+  const connectionId = (event.headers['x-ws-connectionid'] || event.headers['X-Ws-Connectionid']) ?? '';
+  await publishWSNoteNotifications(userId, connectionId, { action: 'note.updated', data: result.Attributes });
+
   return apiResponse.ok({ message: 'Note updated', note: result.Attributes });
 };
 

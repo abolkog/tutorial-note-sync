@@ -1,3 +1,4 @@
+import { getWebSocketConnectionId } from '@/lib/webSocketSession';
 import { useAuth } from '@clerk/react-router';
 
 export function useApi() {
@@ -5,18 +6,28 @@ export function useApi() {
 
   const { getToken } = useAuth();
 
-  async function authHeaders() {
+  async function getHeaders(withConnectionId = false) {
     const token = await getToken();
     if (!token) throw new Error('No auth token from Clerk.');
-    return {
+
+    const headers = {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
+    };
+
+    if (!withConnectionId) return headers;
+
+    const connectionId = getWebSocketConnectionId();
+
+    return {
+      ...headers,
+      'x-ws-connectionId': connectionId ?? '',
     };
   }
 
   async function listNotes(lastKey?: string) {
     const url = new URL(baseUrl);
-    const headers = await authHeaders();
+    const headers = await getHeaders();
     if (lastKey) url.searchParams.set('lastKey', lastKey);
 
     const response = await fetch(url.toString(), {
@@ -34,8 +45,7 @@ export function useApi() {
   }
 
   async function createNote(payload: NotePayload) {
-    const headers = await authHeaders();
-
+    const headers = await getHeaders(true);
     const response = await fetch(baseUrl, {
       headers,
       method: 'POST',
@@ -49,7 +59,7 @@ export function useApi() {
   }
 
   async function updateNote(noteId: string, payload: NotePayload): Promise<Note> {
-    const headers = await authHeaders();
+    const headers = await getHeaders(true);
 
     const response = await fetch(`${baseUrl}/${noteId}`, {
       headers,
@@ -64,7 +74,7 @@ export function useApi() {
   }
 
   async function deleteNote(noteId: string): Promise<void> {
-    const headers = await authHeaders();
+    const headers = await getHeaders(true);
 
     const response = await fetch(`${baseUrl}/${noteId}`, {
       headers,

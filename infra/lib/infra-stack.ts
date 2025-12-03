@@ -27,6 +27,9 @@ export class InfraStack extends cdk.Stack {
       connectionFunction: lambdaLayer.connectionFunction,
       registerFunction: lambdaLayer.registerFunction,
       disConnectionFunction: lambdaLayer.disConnectionFunction,
+      createNoteFunction: lambdaLayer.createNoteFunction,
+      updateNoteFunction: lambdaLayer.updateNoteFunction,
+      deleteNoteFunction: lambdaLayer.deleteNoteFunction,
     });
 
     // HTTP API Gateway Layer

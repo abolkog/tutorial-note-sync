@@ -28,7 +28,7 @@ export class ApiGatewayLayer extends Construct {
 
     const httpApi = new HttpApi(this, 'NoteSyncHttpApi', {
       corsPreflight: {
-        allowHeaders: ['Authorization', 'Content-Type'],
+        allowHeaders: ['Authorization', 'Content-Type', 'x-ws-connectionId'],
         allowMethods: [CorsHttpMethod.GET, CorsHttpMethod.PUT, CorsHttpMethod.DELETE, CorsHttpMethod.POST],
         allowOrigins: ['*'],
         maxAge: Duration.days(1),

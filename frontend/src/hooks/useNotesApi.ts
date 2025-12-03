@@ -96,6 +96,7 @@ export function useNotesApi(): UseNotesApiResult {
 
   return {
     data,
+    setData,
     error,
     activeNote,
     setActiveNote,

@@ -30,13 +30,17 @@ export class LambdaLayer extends Construct {
   }
 
   private createCRUDLambdas(props: LambdaLayerProps) {
-    const environment = { NOTES_TABLE_NAME: props.notesTable.tableName };
+    const environment = {
+      NOTES_TABLE_NAME: props.notesTable.tableName,
+      CONNECTION_TABLE_NAME: props.connectionsTable.tableName,
+    };
 
     this.createNoteFunction = new BaseLambda(this, 'CreateNoteFunction', {
       entry: 'createNote.ts',
       environment,
     });
     props.notesTable.grantWriteData(this.createNoteFunction);
+    props.connectionsTable.grantReadData(this.createNoteFunction);
 
     this.getAllNotesFunction = new BaseLambda(this, 'GetAllNotesFunction', {
       entry: 'getAllNotes.ts',
@@ -55,12 +59,14 @@ export class LambdaLayer extends Construct {
       environment,
     });
     props.notesTable.grantReadWriteData(this.updateNoteFunction);
+    props.connectionsTable.grantReadData(this.updateNoteFunction);
 
     this.deleteNoteFunction = new BaseLambda(this, 'DeleteNoteFunction', {
       entry: 'deleteNote.ts',
       environment,
     });
     props.notesTable.grantReadWriteData(this.deleteNoteFunction);
+    props.connectionsTable.grantReadData(this.deleteNoteFunction);
   }
 
   private createWSLambdas(props: LambdaLayerProps) {

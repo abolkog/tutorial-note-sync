@@ -16,15 +16,29 @@ export function DataProvider({ children }: DataProviderProps) {
     updateNote,
     deleteNote,
     data,
+    setData,
     error,
     activeNote,
     setActiveNote,
   } = useNotesApi();
 
-  useNotesWebSocket();
+  useNotesWebSocket({ setActiveNote, setData });
 
   const value = useMemo<DataContextType>(
     () => ({
+      isLoading,
+      data,
+      setData,
+      error,
+      loadMore,
+      createNote,
+      updateNote,
+      deleteNote,
+      isLoadingMore,
+      activeNote,
+      setActiveNote,
+    }),
+    [
       isLoading,
       data,
       error,
@@ -35,8 +49,8 @@ export function DataProvider({ children }: DataProviderProps) {
       isLoadingMore,
       activeNote,
       setActiveNote,
-    }),
-    [isLoading, data, error, loadMore, createNote, updateNote, deleteNote, isLoadingMore, activeNote, setActiveNote]
+      setData,
+    ]
   );
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

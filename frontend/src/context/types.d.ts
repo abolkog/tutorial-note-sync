@@ -27,6 +27,7 @@ type UseNotesApiResult = {
   deleteNote: (noteId: string) => Promise<void>;
   activeNote: Note | undefined;
   setActiveNote: React.Dispatch<React.SetStateAction<Note | undefined>>;
+  setData: React.Dispatch<React.SetStateAction<AppData | undefined>>;
 };
 
 type DataContextType = UseNotesApiResult & {};

@@ -4,6 +4,7 @@ import { Note, noteSchema } from '../schema/note';
 import { ZodError } from 'zod';
 import { dynamodb } from '../utils/dynamo';
 import { apiResponse } from '../utils/response';
+import { publishWSNoteNotifications } from '../utils/ws';
 
 const createNotesFunction: HandlerType = async (event, userId) => {
   try {
@@ -25,6 +26,10 @@ const createNotesFunction: HandlerType = async (event, userId) => {
         Item: note,
       })
     );
+
+    const connectionId = (event.headers['x-ws-connectionid'] || event.headers['X-Ws-Connectionid']) ?? '';
+
+    await publishWSNoteNotifications(userId, connectionId, { action: 'note.created', data: note });
 
     return apiResponse.created({ message: 'Note Created', note });
   } catch (e) {

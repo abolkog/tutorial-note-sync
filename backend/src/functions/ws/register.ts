@@ -33,7 +33,7 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 = async (event: APIGatew
     );
 
     // Ack Message
-    await sendAck(connectionId, userId);
+    await sendAck(connectionId);
 
     return apiResponse.ok('registered');
   } catch (e) {

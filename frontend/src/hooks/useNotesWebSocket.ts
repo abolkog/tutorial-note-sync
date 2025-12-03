@@ -1,25 +1,72 @@
+import { setWebSocketConnectionId } from '@/lib/webSocketSession';
 import { useAuth } from '@clerk/react-router';
 import { useEffect, useRef } from 'react';
 
-export function useNotesWebSocket() {
+type useNotesWebSocketProps = {
+  setActiveNote: React.Dispatch<React.SetStateAction<Note | undefined>>;
+  setData: React.Dispatch<React.SetStateAction<AppData | undefined>>;
+};
+
+export function useNotesWebSocket({ setActiveNote, setData }: useNotesWebSocketProps) {
   const { userId } = useAuth();
   const wsRef = useRef<WebSocket | null>(null);
   const mountedRef = useRef(false);
 
+  function handleWSMessage(message: string) {
+    const payload = JSON.parse(message);
+    switch (payload.action) {
+      case 'registered': {
+        const { connectionId } = payload.data;
+        setWebSocketConnectionId(connectionId);
+        break;
+      }
+      case 'note.created': {
+        const newNote = payload.data as Note;
+        setData((prev) => ({
+          notes: [newNote, ...(prev?.notes || [])],
+          lastKey: prev?.lastKey,
+        }));
+        setActiveNote(newNote);
+        break;
+      }
+      case 'note.updated': {
+        const updated = payload.data as Note;
+        setData((prev) => {
+          const notes = (prev?.notes || []).map((note) =>
+            note.noteId === updated.noteId ? { ...note, ...updated } : note
+          );
+          return { notes, lastKey: prev?.lastKey };
+        });
+
+        setActiveNote(updated);
+        break;
+      }
+      case 'note.deleted': {
+        const noteId = payload.data as string;
+        setData((prev) => {
+          const notes = (prev?.notes || []).filter((note) => (note.noteId === noteId ? null : note));
+          return { notes, lastKey: prev?.lastKey };
+        });
+
+        setActiveNote(undefined);
+        break;
+      }
+      default:
+        return;
+    }
+  }
+
   useEffect(() => {
     const webSocketURL = import.meta.env.VITE_WS_BASE_URL;
-    if (!webSocketURL || !userId) return;
+    if (!webSocketURL) return;
 
-    // Prevent duplicate connection
-    if (mountedRef.current) return;
-
+    if (mountedRef.current && wsRef.current) return;
     mountedRef.current = true;
 
     const ws = new WebSocket(webSocketURL);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log('WEBSOCKET OPEN');
       if (!userId) return;
       try {
         ws.send(JSON.stringify({ userId, action: 'register' }));
@@ -29,11 +76,7 @@ export function useNotesWebSocket() {
     };
 
     ws.onmessage = (evt) => {
-      const payload = JSON.parse(evt.data);
-      console.log({
-        data: payload,
-        message: 'Websocket on Message',
-      });
+      handleWSMessage(evt.data);
     };
 
     ws.onerror = (e) => {
@@ -46,13 +89,12 @@ export function useNotesWebSocket() {
     };
 
     return () => {
-      // do not close in strict mode first cleanup
-      if (ws.readyState === WebSocket.CONNECTING) return;
-
       try {
+        if (ws.readyState === WebSocket.CONNECTING) return;
+
         if (ws.readyState === WebSocket.OPEN) ws.close();
       } catch {
-        console.error('Failed to close the socket');
+        console.error('Failed to close websocket');
       }
     };
   }, [userId]);

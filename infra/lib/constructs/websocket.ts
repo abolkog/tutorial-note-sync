@@ -9,6 +9,9 @@ type WebSocketLayerProps = {
   connectionFunction: NodejsFunction;
   disConnectionFunction: NodejsFunction;
   registerFunction: NodejsFunction;
+  createNoteFunction: NodejsFunction;
+  updateNoteFunction: NodejsFunction;
+  deleteNoteFunction: NodejsFunction;
 };
 
 export class WebSocketLayer extends Construct {
@@ -52,13 +55,21 @@ export class WebSocketLayer extends Construct {
       actions: ['execute-api:ManageConnections'],
       resources: [managementConnectionARN],
     });
-    [props.registerFunction, props.connectionFunction, props.disConnectionFunction].forEach((f) =>
-      f.addToRolePolicy(managementPolicy)
-    );
+    [
+      props.registerFunction,
+      props.connectionFunction,
+      props.disConnectionFunction,
+      props.createNoteFunction,
+      props.updateNoteFunction,
+      props.deleteNoteFunction,
+    ].forEach((f) => f.addToRolePolicy(managementPolicy));
 
     this.webSocketURL = stage.url; // wss://..../prod
     this.callbackURL = stage.callbackUrl;
 
     props.registerFunction.addEnvironment('WEBSOCKET_CALLBACK_URL', this.callbackURL);
+    props.createNoteFunction.addEnvironment('WEBSOCKET_CALLBACK_URL', this.callbackURL);
+    props.updateNoteFunction.addEnvironment('WEBSOCKET_CALLBACK_URL', this.callbackURL);
+    props.deleteNoteFunction.addEnvironment('WEBSOCKET_CALLBACK_URL', this.callbackURL);
   }
 }
