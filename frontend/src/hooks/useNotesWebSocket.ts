@@ -97,5 +97,5 @@ export function useNotesWebSocket({ setActiveNote, setData }: useNotesWebSocketP
         console.error('Failed to close websocket');
       }
     };
-  }, [userId]);
+  }, [userId, handleWSMessage]);
 }
