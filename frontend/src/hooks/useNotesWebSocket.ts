@@ -2,12 +2,9 @@ import { setWebSocketConnectionId } from '@/lib/webSocketSession';
 import { useAuth } from '@clerk/react-router';
 import { useEffect, useRef } from 'react';
 
-type useNotesWebSocketProps = {
-  setActiveNote: React.Dispatch<React.SetStateAction<Note | undefined>>;
-  setData: React.Dispatch<React.SetStateAction<AppData | undefined>>;
-};
+type UseNotesWebSocketProps = Pick<UseNoteStateResult, 'addNoteInState' | 'updateNoteInState' | 'removeNoteInState'>;
 
-export function useNotesWebSocket({ setActiveNote, setData }: useNotesWebSocketProps) {
+export function useNotesWebSocket({ addNoteInState, updateNoteInState, removeNoteInState }: UseNotesWebSocketProps) {
   const { userId } = useAuth();
   const wsRef = useRef<WebSocket | null>(null);
   const mountedRef = useRef(false);
@@ -22,33 +19,17 @@ export function useNotesWebSocket({ setActiveNote, setData }: useNotesWebSocketP
       }
       case 'note.created': {
         const newNote = payload.data as Note;
-        setData((prev) => ({
-          notes: [newNote, ...(prev?.notes || [])],
-          lastKey: prev?.lastKey,
-        }));
-        setActiveNote(newNote);
+        addNoteInState(newNote);
         break;
       }
       case 'note.updated': {
         const updated = payload.data as Note;
-        setData((prev) => {
-          const notes = (prev?.notes || []).map((note) =>
-            note.noteId === updated.noteId ? { ...note, ...updated } : note
-          );
-          return { notes, lastKey: prev?.lastKey };
-        });
-
-        setActiveNote(updated);
+        updateNoteInState(updated);
         break;
       }
       case 'note.deleted': {
         const noteId = payload.data as string;
-        setData((prev) => {
-          const notes = (prev?.notes || []).filter((note) => (note.noteId === noteId ? null : note));
-          return { notes, lastKey: prev?.lastKey };
-        });
-
-        setActiveNote(undefined);
+        removeNoteInState(noteId);
         break;
       }
       default:
@@ -97,5 +78,5 @@ export function useNotesWebSocket({ setActiveNote, setData }: useNotesWebSocketP
         console.error('Failed to close websocket');
       }
     };
-  }, [userId, handleWSMessage]);
+  }, [userId]);
 }

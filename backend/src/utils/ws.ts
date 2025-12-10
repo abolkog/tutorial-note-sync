@@ -1,6 +1,10 @@
-import { ApiGatewayManagementApiClient, PostToConnectionCommand } from '@aws-sdk/client-apigatewaymanagementapi';
+import {
+  ApiGatewayManagementApiClient,
+  ApiGatewayManagementApiServiceException,
+  PostToConnectionCommand,
+} from '@aws-sdk/client-apigatewaymanagementapi';
 import { dynamodb } from './dynamo';
-import { QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { DeleteCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 
 const CALLBACK_URL = process.env.WEBSOCKET_CALLBACK_URL;
 const CONNECTION_TABLE_NAME = process.env.CONNECTION_TABLE_NAME;
@@ -23,7 +27,7 @@ export async function sendAck(connectionId: string) {
 
 export async function publishWSNoteNotifications(userId: string, connectionId: string, message: WSMessage) {
   // Query dynamo to get all user connections
-  console.log('Excluding ', connectionId);
+
   const result = await dynamodb.send(
     new QueryCommand({
       TableName: CONNECTION_TABLE_NAME,
@@ -50,6 +54,16 @@ export async function publishWSNoteNotifications(userId: string, connectionId: s
         })
       );
     } catch (e) {
+      // Check if connection was gone
+      if (e instanceof ApiGatewayManagementApiServiceException && e.$metadata?.httpStatusCode === 401) {
+        // Stale or gone
+        await dynamodb.send(
+          new DeleteCommand({
+            TableName: process.env.CONNECTIONS_TABLE,
+            Key: { connectionId },
+          })
+        );
+      }
       console.error('Failed to publish notifications', e);
     }
   }

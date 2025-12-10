@@ -1,5 +1,5 @@
 import { useState } from 'react';
-
+import parse from 'html-react-parser';
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +15,7 @@ import { UserButton } from '@clerk/react-router';
 import { useAppData } from '@/hooks/useAppData';
 import { Button } from './ui/button';
 import DeleteNoteConfirmation from './DeleteNoteConfirmation';
+import { FilePlus } from 'lucide-react';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data, isLoadingMore, loadMore, setActiveNote, deleteNote } = useAppData();
@@ -25,6 +26,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     await deleteNote(noteId);
     setDeleting(false);
   }
+
+  function renderNoteContent(content: string) {
+    const data = content.length > 70 ? `${content.substring(0, 70)} ...` : content;
+    return parse(data);
+  }
+
   return (
     <Sidebar collapsible="icon" className="overflow-hidden *:data-[sidebar=sidebar]:flex-row" {...props}>
       {/* This is the first sidebar */}
@@ -45,7 +52,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarGroup />
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    tooltip={{
+                      children: 'New Note',
+                      hidden: false,
+                    }}
+                    onClick={() => setActiveNote(undefined)}
+                  >
+                    <FilePlus />
+                    <span>New Note</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
           <UserButton />
@@ -85,7 +109,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     })}
                   </span>
                   <span className="line-clamp-2 w-[260px] text-sm whitespace-break-spaces">
-                    {note.content.length > 70 ? `${note.content.substring(0, 70)} ...` : note.content}
+                    {renderNoteContent(note.content)}
                   </span>
                 </a>
               ))}

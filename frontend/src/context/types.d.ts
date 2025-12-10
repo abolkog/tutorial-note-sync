@@ -19,15 +19,22 @@ type NotePayload = {
 type UseNotesApiResult = {
   isLoading: boolean;
   isLoadingMore: boolean;
-  data: AppData | undefined;
   error: Error | null;
   loadMore: () => Promise<void>;
   createNote: (payload: NotePayload) => Promise<void>;
   updateNote: (noteId: string, payload: NotePayload) => Promise<void>;
   deleteNote: (noteId: string) => Promise<void>;
-  activeNote: Note | undefined;
-  setActiveNote: React.Dispatch<React.SetStateAction<Note | undefined>>;
-  setData: React.Dispatch<React.SetStateAction<AppData | undefined>>;
 };
 
-type DataContextType = UseNotesApiResult & {};
+type UseNoteStateResult = {
+  data: AppData | undefined;
+  setNotesInState: (params: AppData) => void;
+  appendNotesInState: (params: AppData) => void;
+  addNoteInState: (params: Note) => void;
+  updateNoteInState: (params: Note) => void;
+  removeNoteInState: (noteId: string) => void;
+  activeNote: Note | undefined;
+  setActiveNote: React.Dispatch<React.SetStateAction<Note | undefined>>;
+};
+
+type DataContextType = UseNotesApiResult & Pick<UseNoteStateResult, 'data' | 'activeNote' | 'setActiveNote'>;

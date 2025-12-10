@@ -2,6 +2,7 @@ import { useMemo, type ReactNode } from 'react';
 import { DataContext } from './DataContext';
 import { useNotesApi } from '@/hooks/useNotesApi';
 import { useNotesWebSocket } from '@/hooks/useNotesWebSocket';
+import { useNoteState } from '@/hooks/useNoteState';
 
 type DataProviderProps = {
   children: ReactNode;
@@ -9,48 +10,42 @@ type DataProviderProps = {
 
 export function DataProvider({ children }: DataProviderProps) {
   const {
-    isLoading,
-    isLoadingMore,
-    loadMore,
-    createNote,
-    updateNote,
-    deleteNote,
     data,
-    setData,
-    error,
     activeNote,
     setActiveNote,
-  } = useNotesApi();
+    setNotesInState,
+    addNoteInState,
+    appendNotesInState,
+    removeNoteInState,
+    updateNoteInState,
+  } = useNoteState();
 
-  useNotesWebSocket({ setActiveNote, setData });
+  const { isLoading, isLoadingMore, loadMore, createNote, updateNote, deleteNote, error } = useNotesApi({
+    data,
+    setNotesInState,
+    appendNotesInState,
+    addNoteInState,
+    updateNoteInState,
+    removeNoteInState,
+  });
+
+  useNotesWebSocket({ addNoteInState, removeNoteInState, updateNoteInState });
 
   const value = useMemo<DataContextType>(
-    () => ({
-      isLoading,
-      data,
-      setData,
-      error,
-      loadMore,
-      createNote,
-      updateNote,
-      deleteNote,
-      isLoadingMore,
-      activeNote,
-      setActiveNote,
-    }),
-    [
-      isLoading,
-      data,
-      error,
-      loadMore,
-      createNote,
-      updateNote,
-      deleteNote,
-      isLoadingMore,
-      activeNote,
-      setActiveNote,
-      setData,
-    ]
+    () =>
+      ({
+        isLoading,
+        data,
+        error,
+        loadMore,
+        createNote,
+        updateNote,
+        deleteNote,
+        isLoadingMore,
+        activeNote,
+        setActiveNote,
+      } satisfies DataContextType),
+    [isLoading, data, error, loadMore, createNote, updateNote, deleteNote, isLoadingMore, activeNote, setActiveNote]
   );
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

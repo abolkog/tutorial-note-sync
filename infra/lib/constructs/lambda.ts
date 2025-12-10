@@ -40,7 +40,7 @@ export class LambdaLayer extends Construct {
       environment,
     });
     props.notesTable.grantWriteData(this.createNoteFunction);
-    props.connectionsTable.grantReadData(this.createNoteFunction);
+    props.connectionsTable.grantWriteData(this.createNoteFunction);
 
     this.getAllNotesFunction = new BaseLambda(this, 'GetAllNotesFunction', {
       entry: 'getAllNotes.ts',
@@ -59,14 +59,14 @@ export class LambdaLayer extends Construct {
       environment,
     });
     props.notesTable.grantReadWriteData(this.updateNoteFunction);
-    props.connectionsTable.grantReadData(this.updateNoteFunction);
+    props.connectionsTable.grantWriteData(this.updateNoteFunction);
 
     this.deleteNoteFunction = new BaseLambda(this, 'DeleteNoteFunction', {
       entry: 'deleteNote.ts',
       environment,
     });
     props.notesTable.grantReadWriteData(this.deleteNoteFunction);
-    props.connectionsTable.grantReadData(this.deleteNoteFunction);
+    props.connectionsTable.grantWriteData(this.deleteNoteFunction);
   }
 
   private createWSLambdas(props: LambdaLayerProps) {
